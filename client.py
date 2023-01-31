@@ -1,7 +1,6 @@
 import socket
 import os
 
-#HOST = "10.4.241.100"
 HOST = input("Enter the server ip:")
 PORT = 6060
 
