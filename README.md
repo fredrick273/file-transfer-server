@@ -1,5 +1,5 @@
 
-# File transfer server
+# File Transfer Server
 
 This is a simple client-server file transfer application written in Python. It allows you to perform various file operations like uploading, downloading, and deleting files on the server using a command-line interface on the client side.
 
