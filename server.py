@@ -34,23 +34,39 @@ def change_dir(conn):
 
 def download(client):
     fname = client.recv(1024).decode()
-    file_size = os.path.getsize(fname)
-    client.send(str(file_size).encode())
-    with open(fname,"r") as f:
-        data = f.read()
-    client.send(data.encode())
+    try:
+        with open(fname, "rb") as f:
+            data = f.read(1024)
+            while data:
+                client.send(data)
+                data = f.read(1024)
+    except FileNotFoundError:
+        client.send(b'File not found')
+    finally:
+        # Send the "END_OF_FILE" marker to indicate the end of the file transfer
+        client.send(b'END_OF_FILE')
     print("File sent")
+
+
 
 def upload(client):
     fname = client.recv(1024).decode()
-    fsize = client.recv(1024).decode()
+    fsize = int(client.recv(1024).decode())
     print(f"Receiving {fname} of size {fsize} from client")
-    # progress = tqdm.tqdm(range(fsize), f"Reciving {fname}", unit="8", unit_scale=True, unit_divisor=1024)
-    data = client.recv(8075).decode()
-    with open(fname, "w") as f:
-        f.write(data)
-        # progress.update(len(bytes_read))
+
+    with open(fname, "wb") as f:
+        while True:
+            data = client.recv(1024)
+            if not data:
+                break
+            if data.endswith(b'END_OF_FILE'):
+                f.write(data[:-len(b'END_OF_FILE')])
+                break
+            else:
+                f.write(data)
+
     print("File received successfully")
+
 
 def delete(client):
     fname = client.recv(1024).decode()

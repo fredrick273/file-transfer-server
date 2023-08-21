@@ -24,27 +24,40 @@ def getdir(client):
 
 def upload(client):
     fpath = input("Enter the file path:")
-    fname = (fpath.split("\\")[-1])
+    fname = os.path.basename(fpath)
     file_size = os.path.getsize(fpath)
     client.send(fname.encode())
-    # progress = tqdm.tqdm(range(file_size),f"Sending {fname}", unit="8", unit_scale=True, unit_divisor=1024)
-    with open(fpath, "r") as f:
+    client.send(str(file_size).encode())
 
-        data = f.read()
-    client.send(data.encode())
+    with open(fpath, "rb") as f:
+        while True:
+            data = f.read(1024)
+            if not data:
+                break
+            client.send(data)
+        # Send the "END_OF_FILE" marker to signal the end of the file
+        client.send(b'END_OF_FILE')
     
     print("The file has been uploaded")
-    #       progress.update(len(bytes_read))
 
 def download(client):
     fname = input("Enter a file name which is present in the dir: ")
     client.send(fname.encode())
-    file_size = client.recv(1024).decode()
-    print(f"The file is of {file_size} and is downloading")
-    data = client.recv(8075).decode()
-    with open(fname, "w") as f:
-        f.write(data)
+    data = b''
+    while True:
+        chunk = client.recv(1024)
+        if chunk.endswith(b'END_OF_FILE'):
+            data += chunk[:-len(b'END_OF_FILE')]
+            break
+        data += chunk
+    if data.decode() == "File not found":
+        print("File not found on the server.")
+    else:
+        with open(fname, "wb") as f:
+            f.write(data)
     print("The file has been downloaded")
+
+
 
 
 def deletefile(client):
