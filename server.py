@@ -2,7 +2,7 @@ import socket
 import os
 
 folder = "server_folder"
-print("The server ip is",socket.gethostbyname(socket.gethostname()))
+print("The server's ip is",socket.gethostbyname(socket.gethostname()))
 
 HOST = socket.gethostname()
 
@@ -14,7 +14,7 @@ server.bind((HOST,PORT))
 
 server.listen()
 
-print("Listening for connections...")
+print("Listening for connections... .")
 
 folder_location = os.getcwd()+"\\"+folder
 os.chdir(folder_location)
